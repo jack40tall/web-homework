@@ -1,14 +1,20 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 // eslint-disable-next-line no-unused-vars
 import { arrayOf, string, bool, number, shape, func, object, any, objectOf } from 'prop-types'
-import { css } from '@emotion/core'
+// import { css } from '@emotion/core'
 import { makeStyles } from '@material-ui/core/styles'
+import { useMutation } from '@apollo/client'
 // eslint-disable-next-line no-unused-vars
-import { Table, TableBody, TableCell, TableHead, TableRow, Input, Select, Paper, IconButton, MenuItem, Button } from '@material-ui/core'
+import { Table, TableBody, TableCell, TableHead, TableRow, Input, Select, Paper, IconButton, MenuItem, Button, Modal, Typography, Box, InputLabel } from '@material-ui/core'
 // Icons
 import EditIcon from '@material-ui/icons/EditOutlined'
 import DoneIcon from '@material-ui/icons/DoneAllTwoTone'
 import RevertIcon from '@material-ui/icons/NotInterestedOutlined'
+import DeleteOutline from '@material-ui/icons/DeleteOutline'
+// eslint-disable-next-line no-unused-vars
+import { Dropdown } from '../Dropdown'
+import { TypeDropdown } from '../TypeDropdown'
+// import GetDropdownOptions from '../../gql/queries/getDropdownOptions.gql'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -29,6 +35,9 @@ const useStyles = makeStyles(theme => ({
   input: {
     width: 130,
     height: 40
+  },
+  deleteCell: {
+    width: 60
   }
 }))
 
@@ -38,6 +47,7 @@ const CustomTableCell = ({ tx, name, text, onChange }) => {
 
   return (
     <TableCell align='left' className={classes.tableCell}>
+      {name === 'amount' ? '$ ' : ''}
       {isEditMode ? (
         <Input
           className={classes.input}
@@ -52,35 +62,6 @@ const CustomTableCell = ({ tx, name, text, onChange }) => {
   )
 }
 
-const DropdownTableCell = ({ tx, name, debit, credit, onDropdownChange }) => {
-  const classes = useStyles()
-  const { isEditMode } = tx
-
-  let selectedVal
-  if (debit) selectedVal = 'Debit'
-  else if (credit) selectedVal = 'Credit'
-  else selectedVal = 'Other'
-
-  return (
-    <TableCell align='left' className={classes.tableCell}>
-      {isEditMode ? (
-        <Select
-          className={classes.input}
-          name={name}
-          onChange={e => onDropdownChange(e, tx)}
-          value={selectedVal}
-        >
-          <MenuItem value={'Debit'}>Debit</MenuItem>
-          <MenuItem value={'Credit'}>Credit</MenuItem>
-          <MenuItem value={'Other'}>Other</MenuItem>
-        </Select>
-      ) : (
-        selectedVal
-      )}
-    </TableCell>
-  )
-}
-
 CustomTableCell.propTypes = {
   tx: any,
   name: string,
@@ -88,32 +69,56 @@ CustomTableCell.propTypes = {
   onChange: func
 }
 
-DropdownTableCell.propTypes = {
-  tx: any,
-  name: string,
-  debit: bool,
-  credit: bool,
-  onDropdownChange: func
-}
+export const TxTable = ({ data, dropdownData }) => {
+  const [merchants, setMerchants] = useState(null)
+  const [users, setUsers] = useState(null)
 
-export const TxTable = ({ data }) => {
-  const [rows, setRows] = React.useState(
+  const [] = useMutation()
+
+  useEffect(() => {
+    console.log('dropdwon: ', dropdownData)
+    const { users: rawUsers, merchants: rawMerchants } = dropdownData
+    setMerchants(rawMerchants)
+    const formattedUsers = rawUsers.map(user => {
+      return {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: user.firstName + ' ' + user.lastName,
+        id: user.id
+      }
+    })
+    setUsers(formattedUsers)
+  }, [dropdownData])
+
+  // // eslint-disable-next-line no-unused-vars
+  // const [merchants, setMerchants] = useState({})
+  // // eslint-disable-next-line no-unused-vars
+  // const [users, setUsers] = useState({})
+
+  console.log('dropdownData: ', dropdownData)
+  console.log('users: ', users)
+  const [rows, setRows] = useState(
     data.map(tx => {
       return { ...tx, isEditMode: false }
     })
   )
 
-  const [previous, setPrevious] = React.useState({})
+  const [previous, setPrevious] = useState({})
   const classes = useStyles()
 
   const onToggleEditMode = id => {
-    setRows(
-      rows.map(row => {
-        if (row.id === id) {
-          return { ...row, isEditMode: !row.isEditMode }
-        }
-        return row
-      })
+    console.log('onToggleEditMode')
+
+    // Prevents race condition
+    setRows(prevState => {
+      return (
+        prevState.map(row => {
+          if (row.id === id) {
+            return { ...row, isEditMode: !row.isEditMode }
+          }
+          return row
+        }))
+    }
     )
   }
 
@@ -131,53 +136,116 @@ export const TxTable = ({ data }) => {
       }
       return currRow
     })
+    console.log('onChange')
+
     setRows(newRows)
   }
 
-  const onDropdownChange = (edit, tx) => {
+  const onTypeChange = (edit, tx) => {
     if (!previous[tx.id]) {
       setPrevious(state => ({ ...state, [tx.id]: tx }))
     }
-    const { value, name } = edit.target
+    const { value } = edit.target
     const { id } = tx
     const newRows = rows.map(tx => {
       if (tx.id === id) {
-        return { ...tx, [name]: value }
+        return (
+          value === 'Credit' ? { ...tx, credit: true, debit: false }
+            : { ...tx, credit: false, debit: true }
+        )
       }
       return tx
     })
+    console.log('TypeChange')
+
     setRows(newRows)
   }
 
+  const onUserChange = (tx, option) => {
+    if (!previous[tx.id]) {
+      setPrevious(state => ({ ...state, [tx.id]: tx }))
+    }
+    const { id } = tx
+    const newRows = rows.map(tx => {
+      if (tx.id === id) {
+        return (
+          { ...tx,
+            user: {
+              id: option.id,
+              firstName: option.firstName,
+              lastName: option.lastName
+            } }
+        )
+      }
+      return tx
+    })
+
+    setRows(newRows)
+  }
+
+  const onMerchantChange = (tx, option) => {
+    if (!previous[tx.id]) {
+      setPrevious(state => ({ ...state, [tx.id]: tx }))
+    }
+
+    const { id } = tx
+    const newRows = rows.map(tx => {
+      if (tx.id === id) {
+        return (
+          { ...tx,
+            merchant: {
+              id: option.id,
+              name: option.name
+            } }
+        )
+      }
+      return tx
+    })
+
+    setRows(newRows)
+  }
+
+  const onConfirmEdit = id => {
+    onToggleEditMode(id)
+  }
+
   const onRevert = id => {
+    console.log('previous: ', previous['61b953f649cf053bd07e6e06'])
     const newRows = rows.map(row => {
       if (row.id === id) {
         return previous[id] ? previous[id] : row
       }
       return row
     })
+    console.log('newRows: ', newRows)
     setRows(newRows)
     setPrevious(state => {
       delete state[id]
       return state
     })
+
+    onToggleEditMode(id)
+  }
+
+  const onDeleteRow = id => {
+    const newRows = rows.map(row => {
+      if (row.id !== id) {
+        return row
+      }
+    })
+    console.log('newRows: ', newRows)
+    setRows(newRows)
+    setPrevious(state => {
+      delete state[id]
+      return state
+    })
+
     onToggleEditMode(id)
   }
 
   return (
     <>
-      <div css={css`{
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            // border: 1px solid red;
-            // width: 600px;
-            }`}>
-        <h1>Create: </h1>
-        <Button variant='outlined'>Merchant</Button>
-        <Button variant='outlined'>User</Button>
-        <Button variant='outlined'>Transaction</Button>
-      </div>
+
       <Paper className={classes.root}>
 
         <Table aria-label='caption table' className={classes.table}>
@@ -190,12 +258,15 @@ export const TxTable = ({ data }) => {
               <TableCell align='left'>Description</TableCell>
               <TableCell align='left'>Type</TableCell>
               <TableCell align='left'>Amount</TableCell>
+              <TableCell align='left' />
+
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.map(tx => {
             // eslint-disable-next-line no-unused-vars
-              const { id, user_id: userId, description, merchant_id: merchantId, debit, credit, amount, isEditMode } = tx
+              const { id, user_id: userId, user, description, merchant_id: merchantId, merchant, debit, credit, amount, isEditMode } = tx
+              const fullName = `${user.firstName} ${user.lastName}`
               return (
                 <TableRow data-testid={`transaction-${id}`} key={`transaction-${id}`}>
                   <TableCell className={classes.selectTableCell}>
@@ -203,7 +274,7 @@ export const TxTable = ({ data }) => {
                       <>
                         <IconButton
                           aria-label='done'
-                          onClick={() => onToggleEditMode(id)}
+                          onClick={() => onConfirmEdit(id)}
                         >
                           <DoneIcon />
                         </IconButton>
@@ -216,7 +287,7 @@ export const TxTable = ({ data }) => {
                       </>
                     ) : (
                       <IconButton
-                        aria-label='delete'
+                        aria-label='edit'
                         onClick={() => onToggleEditMode(id)}
                       >
                         <EditIcon />
@@ -226,12 +297,28 @@ export const TxTable = ({ data }) => {
                   <TableCell align='left' className={classes.tableCell}>
                     {id}
                   </TableCell>
-                  <CustomTableCell {...{ tx, name: 'id', text: id, onChange }} />
-                  <CustomTableCell {...{ tx, name: 'user_id', text: userId, onChange }} />
-                  <CustomTableCell {...{ tx, name: 'merchant_id', text: merchantId, onChange }} />
+                  <TableCell align='left' className={classes.tableCell}>
+                    <Dropdown {...{ tx, name: 'user_id', options: users, selectedVal: fullName, onChange: onUserChange }} />
+                  </TableCell>
+                  <TableCell align='left' className={classes.tableCell}>
+                    <Dropdown {...{ tx, name: 'merchant', options: merchants, selectedVal: merchant.name, onChange: onMerchantChange }} />
+                  </TableCell>
                   <CustomTableCell {...{ tx, name: 'description', text: description, onChange }} />
-                  <DropdownTableCell {...{ tx, name: 'type', debit, credit, onDropdownChange }} />
-                  <CustomTableCell {...{ tx, name: 'amount', text: `$${amount}`, onChange }} />
+                  <TableCell align='left' className={classes.tableCell}>
+                    <TypeDropdown {...{ tx, name: 'type', debit, credit, onTypeChange }} />
+                  </TableCell>
+                  <CustomTableCell {...{ tx, name: 'amount', text: `${amount}`, onChange }} />
+                  <TableCell className={classes.deleteCell}>
+                    {isEditMode ? (
+                      <IconButton
+                        aria-label='delete'
+                        onClick={() => onDeleteRow(id)}
+                      >
+                        <DeleteOutline />
+                      </IconButton>
+
+                    ) : ''}
+                  </TableCell>
                 </TableRow>
               )
             })}
@@ -294,5 +381,6 @@ TxTable.propTypes = {
     debit: bool,
     credit: bool,
     amount: number
-  }))
+  })),
+  dropdownData: any
 }
