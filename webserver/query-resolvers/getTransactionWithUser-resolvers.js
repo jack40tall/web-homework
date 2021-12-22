@@ -12,7 +12,8 @@ async function find (criteria) {
 }
 
 async function findOne (id) {
-  const query = TransactionModel.find({ id: id })
+  // TODO: Change this
+  const query = TransactionModel.find(id)
   const transaction = await query.exec()
 
   return packageModel(transaction)[0] || null

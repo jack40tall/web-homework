@@ -1,0 +1,11 @@
+query GetDropdownOptions {
+  merchants {
+    id
+    name
+  }
+  users {
+    id
+    firstName
+    lastName
+  }
+}

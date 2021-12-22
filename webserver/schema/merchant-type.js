@@ -7,24 +7,22 @@ const {
   GraphQLObjectType
 } = graphql
 
-const UserType = new GraphQLObjectType({
-  name: 'User',
+const MerchantType = new GraphQLObjectType({
+  name: 'Merchant',
   fields: () => ({
     id: { type: GraphQLString },
-    dob: { type: GraphQLString },
-    firstName: { type: GraphQLString },
-    lastName: { type: GraphQLString },
+    name: { type: GraphQLString },
     transactions: {
       type: new GraphQLList(TransactionType),
       resolve (parentValue, args) {
-        return Transaction.find({ user_id: parentValue.id }).populate('transaction')
+        return Transaction.find({ merchant_id: parentValue.id }).populate('transaction')
       }
     }
   })
 })
 
-module.exports = UserType
+module.exports = MerchantType
 
-const UserSchema = require(path.join('..', 'data-models', 'User')) // eslint-disable-line no-unused-vars
+const MerchantSchema = require(path.join('..', 'data-models', 'Merchant')) // eslint-disable-line no-unused-vars
 const { TransactionModel: Transaction } = require(path.join('..', 'data-models', 'Transaction'))
 const TransactionType = require('./transaction-type')

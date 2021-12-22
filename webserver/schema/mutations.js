@@ -1,12 +1,17 @@
 const graphql = require('graphql')
 const { GraphQLObjectType, GraphQLString, GraphQLBoolean, GraphQLFloat } = graphql
 const { TransactionModel } = require('../data-models/Transaction')
+const { UserModel } = require('../data-models/User')
+const { MerchantModel } = require('../data-models/Merchant')
 const TransactionType = require('./transaction-type')
+const UserType = require('./user-type')
+const MerchantType = require('./merchant-type')
+const ObjectID = require('mongodb').ObjectID
 
 const mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    addTransaction: {
+    createTransaction: {
       type: TransactionType,
       args: {
         user_id: { type: GraphQLString },
@@ -18,7 +23,32 @@ const mutation = new GraphQLObjectType({
       },
       /* eslint-disable-next-line camelcase */
       resolve (parentValue, { user_id, description, merchant_id, debit, credit, amount }) {
-        return (new TransactionModel({ user_id, description, merchant_id, debit, credit, amount })).save()
+        const newId = new ObjectID()
+        return (new TransactionModel({ id: newId, user_id, description, merchant_id, debit, credit, amount })).save()
+      }
+    },
+    createUser: {
+      type: UserType,
+      args: {
+        firstName: { type: GraphQLString },
+        lastName: { type: GraphQLString },
+        dob: { type: GraphQLString }
+      },
+      /* eslint-disable-next-line camelcase */
+      resolve (parentValue, { firstName, lastName, dob }) {
+        const newId = new ObjectID()
+        return (new UserModel({ id: newId, firstName, lastName, dob })).save()
+      }
+    },
+    createMerchant: {
+      type: MerchantType,
+      args: {
+        name: { type: GraphQLString }
+      },
+      /* eslint-disable-next-line camelcase */
+      resolve (parentValue, { name }) {
+        const newId = new ObjectID()
+        return (new MerchantModel({ id: newId, name })).save()
       }
     }
   }

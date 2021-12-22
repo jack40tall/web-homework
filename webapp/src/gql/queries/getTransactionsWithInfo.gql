@@ -1,0 +1,18 @@
+query GetTransactionWithInfo {
+  transactions {
+    id
+    user_id
+    user {
+      firstName
+      lastName
+    }
+    merchant {
+      name
+    }
+    description
+    merchant_id
+    debit
+    credit
+    amount
+  }
+}
