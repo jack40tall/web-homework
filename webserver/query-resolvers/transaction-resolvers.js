@@ -18,7 +18,14 @@ async function findOne (id) {
   return packageModel(transaction)[0] || null
 }
 
+async function deleteOne (id) {
+  const query = TransactionModel.deleteOne({ id: id })
+  const result = await query.exec()
+  return result
+}
+
 module.exports = {
   find,
-  findOne
+  findOne,
+  deleteOne
 }

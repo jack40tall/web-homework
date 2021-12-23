@@ -1,13 +1,7 @@
-mutation updateTransaction(
+mutation deleteTransaction(
   $id: String!
 ) {
-  updateTransaction() {
+  deleteTransaction(id: $id) {
     id
-    user_id
-    description
-    merchant_id
-    debit
-    credit
-    amount
   }
 }

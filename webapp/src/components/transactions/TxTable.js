@@ -14,7 +14,8 @@ import DeleteOutline from '@material-ui/icons/DeleteOutline'
 // eslint-disable-next-line no-unused-vars
 import { Dropdown } from '../Dropdown'
 import { TypeDropdown } from '../TypeDropdown'
-// import GetDropdownOptions from '../../gql/queries/getDropdownOptions.gql'
+import { CustomInput } from '../CustomInput'
+import DeleteTransaction from '../../gql/mutations/deleteTransaction.gql'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -41,39 +42,11 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const CustomTableCell = ({ tx, name, text, onChange }) => {
-  const classes = useStyles()
-  const { isEditMode } = tx
-
-  return (
-    <TableCell align='left' className={classes.tableCell}>
-      {name === 'amount' ? '$ ' : ''}
-      {isEditMode ? (
-        <Input
-          className={classes.input}
-          name={name}
-          onChange={e => onChange(e, tx)}
-          value={text}
-        />
-      ) : (
-        text
-      )}
-    </TableCell>
-  )
-}
-
-CustomTableCell.propTypes = {
-  tx: any,
-  name: string,
-  text: string,
-  onChange: func
-}
-
 export const TxTable = ({ data, dropdownData }) => {
   const [merchants, setMerchants] = useState(null)
   const [users, setUsers] = useState(null)
 
-  const [] = useMutation()
+  const [deleteTransaction] = useMutation(DeleteTransaction)
 
   useEffect(() => {
     console.log('dropdwon: ', dropdownData)
@@ -228,19 +201,10 @@ export const TxTable = ({ data, dropdownData }) => {
   }
 
   const onDeleteRow = id => {
-    const newRows = rows.map(row => {
-      if (row.id !== id) {
-        return row
-      }
-    })
-    console.log('newRows: ', newRows)
+    deleteTransaction({ variables: { id } })
+    const newRows = rows.filter(row => row.id !== id)
     setRows(newRows)
-    setPrevious(state => {
-      delete state[id]
-      return state
-    })
-
-    onToggleEditMode(id)
+    setPrevious(newRows)
   }
 
   return (
@@ -263,6 +227,7 @@ export const TxTable = ({ data, dropdownData }) => {
             </TableRow>
           </TableHead>
           <TableBody>
+            {console.log('rows: ', rows)}
             {rows.map(tx => {
             // eslint-disable-next-line no-unused-vars
               const { id, user_id: userId, user, description, merchant_id: merchantId, merchant, debit, credit, amount, isEditMode } = tx
@@ -303,11 +268,17 @@ export const TxTable = ({ data, dropdownData }) => {
                   <TableCell align='left' className={classes.tableCell}>
                     <Dropdown {...{ tx, name: 'merchant', options: merchants, selectedVal: merchant.name, onChange: onMerchantChange }} />
                   </TableCell>
-                  <CustomTableCell {...{ tx, name: 'description', text: description, onChange }} />
+                  <TableCell align='left' className={classes.tableCell}>
+                    <CustomInput {...{ tx, name: 'description', text: description, onChange }} />
+
+                  </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
                     <TypeDropdown {...{ tx, name: 'type', debit, credit, onTypeChange }} />
                   </TableCell>
-                  <CustomTableCell {...{ tx, name: 'amount', text: `${amount}`, onChange }} />
+                  <TableCell align='left' className={classes.tableCell}>
+                    <div>$</div>
+                    <CustomInput {...{ tx, name: 'amount', text: `${amount}`, onChange }} />
+                  </TableCell>
                   <TableCell className={classes.deleteCell}>
                     {isEditMode ? (
                       <IconButton

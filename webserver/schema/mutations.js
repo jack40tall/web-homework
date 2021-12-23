@@ -3,6 +3,7 @@ const { GraphQLObjectType, GraphQLString, GraphQLBoolean, GraphQLFloat } = graph
 const { TransactionModel } = require('../data-models/Transaction')
 const { UserModel } = require('../data-models/User')
 const { MerchantModel } = require('../data-models/Merchant')
+const Transactions = require('../query-resolvers/transaction-resolvers.js')
 const TransactionType = require('./transaction-type')
 const UserType = require('./user-type')
 const MerchantType = require('./merchant-type')
@@ -25,6 +26,15 @@ const mutation = new GraphQLObjectType({
       resolve (parentValue, { user_id, description, merchant_id, debit, credit, amount }) {
         const newId = new ObjectID()
         return (new TransactionModel({ id: newId, user_id, description, merchant_id, debit, credit, amount })).save()
+      }
+    },
+    deleteTransaction: {
+      type: TransactionType,
+      args: {
+        id: { type: GraphQLString }
+      },
+      resolve (parentValue, { id }) {
+        return Transactions.deleteOne(id)
       }
     },
     createUser: {
