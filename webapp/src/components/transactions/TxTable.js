@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { arrayOf, string, bool, number, shape, any } from 'prop-types'
-import { makeStyles } from '@material-ui/core/styles'
 import { Table, TableBody, TableCell, TableHead, TableRow, Paper, IconButton } from '@material-ui/core'
 // Icons
 import EditIcon from '@material-ui/icons/EditOutlined'
@@ -15,36 +14,13 @@ import { CustomInput } from '../CustomInput'
 import { useMutation } from '@apollo/client'
 import DeleteTransaction from '../../gql/mutations/deleteTransaction.gql'
 import UpdateTransaction from '../../gql/mutations/updateTransaction.gql'
+// style
+import emotionStyles, { muiStyles } from '../../style/globalStyles'
 
-import { css } from '@emotion/core'
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    width: '100%',
-    marginTop: theme.spacing(3),
-    overflowX: 'auto'
-  },
-  table: {
-    minWidth: 650
-  },
-  selectTableCell: {
-    width: 60
-  },
-  tableCell: {
-    width: 130,
-    height: 40
-  },
-  input: {
-    width: 130,
-    height: 40
-  },
-  deleteCell: {
-    width: 60
-  }
-}))
+const { dollarSign, relativeParent, tableHeader } = emotionStyles
 
 export const TxTable = ({ data, dropdownData }) => {
-  const classes = useStyles()
+  const classes = muiStyles()
 
   const [merchants, setMerchants] = useState(null)
   const [users, setUsers] = useState(null)
@@ -208,21 +184,18 @@ export const TxTable = ({ data, dropdownData }) => {
 
   return (
     <>
-
       <Paper className={classes.root}>
-
         <Table aria-label='caption table' className={classes.table}>
-          <TableHead>
+          <TableHead css={tableHeader} >
             <TableRow>
-              <TableCell align='left' />
-              <TableCell align='left'>Transaction ID</TableCell>
-              <TableCell align='left'>Purchaser</TableCell>
-              <TableCell align='left'>Merchant</TableCell>
-              <TableCell align='left'>Description</TableCell>
-              <TableCell align='left'>Type</TableCell>
-              <TableCell align='left'>Amount</TableCell>
-              <TableCell align='left' />
-
+              <TableCell align='left' className='tableHeader' />
+              <TableCell align='left' className='tableHeader'>Transaction ID</TableCell>
+              <TableCell align='left' className='tableHeader'>Purchaser</TableCell>
+              <TableCell align='left' className='tableHeader'>Merchant</TableCell>
+              <TableCell align='left' className='tableHeader'>Description</TableCell>
+              <TableCell align='left' className='tableHeader'>Type</TableCell>
+              <TableCell align='left' className='tableHeader'>Amount</TableCell>
+              <TableCell align='left' className='tableHeader' />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -272,14 +245,8 @@ export const TxTable = ({ data, dropdownData }) => {
                   <TableCell align='left' className={classes.tableCell}>
                     <TypeDropdown {...{ tx, name: 'type', debit, credit, onTypeChange }} />
                   </TableCell>
-                  <TableCell align='left' className={classes.tableCell} css={css`
-                  position: relative;
-                  `}>
-                    <div css={css`
-                    position: absolute;
-                    top: 39%;
-                    left: 0px;
-                    `}>$</div>
+                  <TableCell align='left' className={classes.tableCell} css={relativeParent}>
+                    <div css={dollarSign}>$</div>
                     <CustomInput {...{ tx, name: 'amount', text: `${amount}`, onChange }} />
                   </TableCell>
                   <TableCell className={classes.deleteCell}>
