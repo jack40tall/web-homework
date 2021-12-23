@@ -11,20 +11,11 @@ import { NewTransactionModal } from '../../components/transactions/buttons/NewTr
 
 export function Home () {
   const { loading, error, data } = useQuery(GetTransactionsWithInfo)
-  console.log('refetch query')
   const { loading: dropdownLoading, error: dropdownError, data: dropdownData } = useQuery(GetDropdownOptions)
 
   const [openUser, setOpenUser] = useState(false)
   const [openMerchant, setOpenMerchant] = useState(false)
   const [openTransaction, setOpenTransaction] = useState(false)
-
-  // useEffect(() => {
-  //   ({ loading, error, data } = useQuery(GetTransactionsWithInfo))
-  //   // eslint-disable-next-line func-call-spacing
-  //   console.log('refetch query')
-  //   // eslint-disable-next-line no-unexpected-multiline
-  //   ({ loading: dropdownLoading, error: dropdownError, data: dropdownData } = useQuery(GetDropdownOptions))
-  // }, [openUser, openMerchant])
 
   if (loading || dropdownLoading) {
     return (
@@ -46,13 +37,10 @@ export function Home () {
     <Fragment>
       <h1 css={centerStyle}>Transactions</h1>
       <p css={centerStyle}>Edit, Add, and Delete your Transactions</p>
-      {console.log('rerender')}
       <div css={css`{
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            // border: 1px solid red;
-            // width: 600px;
             }`}>
         <h1>Create: </h1>
         <Button onClick={() => setOpenMerchant(true)} variant='outlined'>Merchant</Button>

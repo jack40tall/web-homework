@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react'
-// eslint-disable-next-line no-unused-vars
-import { arrayOf, string, bool, number, shape, func, object, any, objectOf } from 'prop-types'
-// import { css } from '@emotion/core'
+import { arrayOf, string, bool, number, shape, any } from 'prop-types'
 import { makeStyles } from '@material-ui/core/styles'
-import { useMutation } from '@apollo/client'
-// eslint-disable-next-line no-unused-vars
-import { Table, TableBody, TableCell, TableHead, TableRow, Input, Select, Paper, IconButton, MenuItem, Button, Modal, Typography, Box, InputLabel } from '@material-ui/core'
+import { Table, TableBody, TableCell, TableHead, TableRow, Paper, IconButton } from '@material-ui/core'
 // Icons
 import EditIcon from '@material-ui/icons/EditOutlined'
 import DoneIcon from '@material-ui/icons/DoneAllTwoTone'
 import RevertIcon from '@material-ui/icons/NotInterestedOutlined'
 import DeleteOutline from '@material-ui/icons/DeleteOutline'
-// eslint-disable-next-line no-unused-vars
+// Components
 import { Dropdown } from '../Dropdown'
 import { TypeDropdown } from '../TypeDropdown'
 import { CustomInput } from '../CustomInput'
+// gql
+import { useMutation } from '@apollo/client'
 import DeleteTransaction from '../../gql/mutations/deleteTransaction.gql'
+import UpdateTransaction from '../../gql/mutations/updateTransaction.gql'
+
+import { css } from '@emotion/core'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -43,13 +44,21 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export const TxTable = ({ data, dropdownData }) => {
+  const classes = useStyles()
+
   const [merchants, setMerchants] = useState(null)
   const [users, setUsers] = useState(null)
+  const [previous, setPrevious] = useState({})
+  const [rows, setRows] = useState(
+    data.map(tx => {
+      return { ...tx, isEditMode: false }
+    })
+  )
 
   const [deleteTransaction] = useMutation(DeleteTransaction)
+  const [updateTransaction] = useMutation(UpdateTransaction)
 
   useEffect(() => {
-    console.log('dropdwon: ', dropdownData)
     const { users: rawUsers, merchants: rawMerchants } = dropdownData
     setMerchants(rawMerchants)
     const formattedUsers = rawUsers.map(user => {
@@ -63,26 +72,8 @@ export const TxTable = ({ data, dropdownData }) => {
     setUsers(formattedUsers)
   }, [dropdownData])
 
-  // // eslint-disable-next-line no-unused-vars
-  // const [merchants, setMerchants] = useState({})
-  // // eslint-disable-next-line no-unused-vars
-  // const [users, setUsers] = useState({})
-
-  console.log('dropdownData: ', dropdownData)
-  console.log('users: ', users)
-  const [rows, setRows] = useState(
-    data.map(tx => {
-      return { ...tx, isEditMode: false }
-    })
-  )
-
-  const [previous, setPrevious] = useState({})
-  const classes = useStyles()
-
   const onToggleEditMode = id => {
-    console.log('onToggleEditMode')
-
-    // Prevents race condition
+    // prevState prevents race condition
     setRows(prevState => {
       return (
         prevState.map(row => {
@@ -91,15 +82,14 @@ export const TxTable = ({ data, dropdownData }) => {
           }
           return row
         }))
-    }
-    )
+    })
   }
 
   const onChange = (edit, row) => {
     if (!previous[row.id]) {
       setPrevious(state => ({ ...state, [row.id]: row }))
     }
-    console.log('Previous', previous, ' row: ', row, ' edit.target.value: ', edit.target.value)
+
     const value = edit.target.value
     const name = edit.target.name
     const { id } = row
@@ -109,7 +99,6 @@ export const TxTable = ({ data, dropdownData }) => {
       }
       return currRow
     })
-    console.log('onChange')
 
     setRows(newRows)
   }
@@ -129,7 +118,6 @@ export const TxTable = ({ data, dropdownData }) => {
       }
       return tx
     })
-    console.log('TypeChange')
 
     setRows(newRows)
   }
@@ -179,18 +167,29 @@ export const TxTable = ({ data, dropdownData }) => {
   }
 
   const onConfirmEdit = id => {
+    const newRowArray = rows.filter(row => row.id === id)
+    const newRow = newRowArray[0]
+    updateTransaction({
+      variables:
+        {
+          id: newRow.id,
+          user_id: newRow.user_id,
+          amount: newRow.amount,
+          credit: newRow.credit,
+          debit: newRow.debit,
+          description: newRow.description,
+          merchant_id: newRow.merchant_id
+        } })
     onToggleEditMode(id)
   }
 
   const onRevert = id => {
-    console.log('previous: ', previous['61b953f649cf053bd07e6e06'])
     const newRows = rows.map(row => {
       if (row.id === id) {
         return previous[id] ? previous[id] : row
       }
       return row
     })
-    console.log('newRows: ', newRows)
     setRows(newRows)
     setPrevious(state => {
       delete state[id]
@@ -227,10 +226,8 @@ export const TxTable = ({ data, dropdownData }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {console.log('rows: ', rows)}
             {rows.map(tx => {
-            // eslint-disable-next-line no-unused-vars
-              const { id, user_id: userId, user, description, merchant_id: merchantId, merchant, debit, credit, amount, isEditMode } = tx
+              const { id, user, description, merchant, debit, credit, amount, isEditMode } = tx
               const fullName = `${user.firstName} ${user.lastName}`
               return (
                 <TableRow data-testid={`transaction-${id}`} key={`transaction-${id}`}>
@@ -275,8 +272,14 @@ export const TxTable = ({ data, dropdownData }) => {
                   <TableCell align='left' className={classes.tableCell}>
                     <TypeDropdown {...{ tx, name: 'type', debit, credit, onTypeChange }} />
                   </TableCell>
-                  <TableCell align='left' className={classes.tableCell}>
-                    <div>$</div>
+                  <TableCell align='left' className={classes.tableCell} css={css`
+                  position: relative;
+                  `}>
+                    <div css={css`
+                    position: absolute;
+                    top: 39%;
+                    left: 0px;
+                    `}>$</div>
                     <CustomInput {...{ tx, name: 'amount', text: `${amount}`, onChange }} />
                   </TableCell>
                   <TableCell className={classes.deleteCell}>
