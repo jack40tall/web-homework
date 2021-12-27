@@ -3,11 +3,13 @@ import { useQuery } from '@apollo/client'
 import GetTransactionsWithInfo from '../../gql/queries/getTransactionsWithInfo.gql'
 import GetDropdownOptions from '../../gql/queries/getDropdownOptions.gql'
 import { TxTable } from '../../components/transactions/TxTable'
-import { css } from '@emotion/core'
 import { Button } from '@material-ui/core'
 import { NewUserModal } from '../../components/transactions/buttons/NewUserModal'
 import { NewMerchantModal } from '../../components/transactions/buttons/NewMerchantModal'
 import { NewTransactionModal } from '../../components/transactions/buttons/NewTransactionModal'
+import emotionStyles from '../../style/globalStyles'
+
+const { centerStyle, flexCenter } = emotionStyles
 
 export function Home () {
   const { loading, error, data } = useQuery(GetTransactionsWithInfo)
@@ -37,12 +39,9 @@ export function Home () {
     <Fragment>
       <h1 css={centerStyle}>Transactions</h1>
       <p css={centerStyle}>Edit, Add, and Delete your Transactions</p>
-      <div css={css`{
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            }`}>
-        <h1>Create: </h1>
+      <h2>Create: </h2>
+
+      <div css={flexCenter}>
         <Button onClick={() => setOpenMerchant(true)} variant='outlined'>Merchant</Button>
         <Button onClick={() => setOpenUser(true)} variant='outlined'>User</Button>
         <Button onClick={() => setOpenTransaction(true)} variant='outlined'>Transaction</Button>
@@ -54,7 +53,3 @@ export function Home () {
     </Fragment>
   )
 }
-
-const centerStyle = css`
-  text-align: center;
-`

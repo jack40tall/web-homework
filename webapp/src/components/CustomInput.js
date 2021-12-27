@@ -1,14 +1,7 @@
 import React from 'react'
 import { Input } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
+import { useStyles } from '../style/globalStyles'
 import { string, func, any } from 'prop-types'
-
-const useStyles = makeStyles(theme => ({
-  input: {
-    width: 130,
-    height: 40
-  }
-}))
 
 export const CustomInput = ({ tx, name, text, onChange }) => {
   const classes = useStyles()

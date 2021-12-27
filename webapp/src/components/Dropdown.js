@@ -1,15 +1,7 @@
 import React from 'react'
 import { Select, MenuItem } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
-// eslint-disable-next-line no-unused-vars
-import { arrayOf, string, func, any } from 'prop-types'
-
-const useStyles = makeStyles(theme => ({
-  input: {
-    width: 130,
-    height: 40
-  }
-}))
+import { string, func, any } from 'prop-types'
+import { useStyles } from '../style/globalStyles'
 
 export const Dropdown = ({ tx, name, options, selectedVal, onChange }) => {
   const classes = useStyles()

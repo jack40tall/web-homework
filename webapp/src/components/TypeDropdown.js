@@ -1,14 +1,7 @@
 import React from 'react'
 import { Select, MenuItem } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
 import { string, func, any, bool } from 'prop-types'
-
-const useStyles = makeStyles(theme => ({
-  input: {
-    width: 130,
-    height: 40
-  }
-}))
+import { useStyles } from '../style/globalStyles'
 
 export const TypeDropdown = ({ tx, name, debit, credit, onTypeChange }) => {
   const classes = useStyles()

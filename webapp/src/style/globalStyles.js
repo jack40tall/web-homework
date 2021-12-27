@@ -6,6 +6,13 @@ const dollarSign = css`
   top: 39%;
   left: 0px;`
 
+const centerStyle = css`
+  text-align: center;`
+
+const flexCenter = css`
+  display: flex;
+  align-items: center;`
+
 const relativeParent = css`
   position: relative;`
 
@@ -85,5 +92,7 @@ export default {
   submitButton,
   dollarSign,
   relativeParent,
-  tableHeader
+  tableHeader,
+  centerStyle,
+  flexCenter
 }
