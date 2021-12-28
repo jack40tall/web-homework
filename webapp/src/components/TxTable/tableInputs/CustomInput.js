@@ -1,10 +1,10 @@
 import React from 'react'
 import { Input } from '@material-ui/core'
-import { useStyles } from '../style/globalStyles'
+import { muiStyles } from '../../../style/globalStyles'
 import { string, func, any } from 'prop-types'
 
 export const CustomInput = ({ tx, name, text, onChange }) => {
-  const classes = useStyles()
+  const classes = muiStyles()
   const { isEditMode } = tx
 
   if (isEditMode) {

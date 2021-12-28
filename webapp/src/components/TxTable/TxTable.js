@@ -7,9 +7,9 @@ import DoneIcon from '@material-ui/icons/DoneAllTwoTone'
 import RevertIcon from '@material-ui/icons/NotInterestedOutlined'
 import DeleteOutline from '@material-ui/icons/DeleteOutline'
 // Components
-import { Dropdown } from '../Dropdown'
-import { TypeDropdown } from '../TypeDropdown'
-import { CustomInput } from '../CustomInput'
+import { Dropdown } from './tableInputs/Dropdown'
+import { TypeDropdown } from './tableInputs/TypeDropdown'
+import { CustomInput } from './tableInputs/CustomInput'
 // gql
 import { useMutation } from '@apollo/client'
 import DeleteTransaction from '../../gql/mutations/deleteTransaction.gql'
@@ -102,11 +102,12 @@ export const TxTable = ({ data, dropdownData }) => {
     if (!previous[tx.id]) {
       setPrevious(state => ({ ...state, [tx.id]: tx }))
     }
-    const { id } = tx
+    const { id: transactionId } = tx
     const newRows = rows.map(tx => {
-      if (tx.id === id) {
+      if (tx.id === transactionId) {
         return (
           { ...tx,
+            user_id: option.id,
             user: {
               id: option.id,
               firstName: option.firstName,
@@ -125,11 +126,12 @@ export const TxTable = ({ data, dropdownData }) => {
       setPrevious(state => ({ ...state, [tx.id]: tx }))
     }
 
-    const { id } = tx
+    const { id: transactionId } = tx
     const newRows = rows.map(tx => {
-      if (tx.id === id) {
+      if (tx.id === transactionId) {
         return (
           { ...tx,
+            merchant_id: option.id,
             merchant: {
               id: option.id,
               name: option.name

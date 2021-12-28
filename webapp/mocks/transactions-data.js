@@ -1,34 +1,34 @@
-const transactions = [
-  {
-    'id': '5d5c1f747e01cd704f18f863',
-    'user_id': 'employee4',
-    'description': 'cleaningsupplies',
-    'merchant_id': 'walmart',
-    'debit': true,
-    'credit': false,
-    'amount': 150,
-    '__typename': 'Transaction'
-  },
-  {
-    'id': '5d5c1f747e01cd704f18f864',
-    'user_id': 'employee3',
-    'description': 'refund',
-    'merchant_id': 'walmart',
-    'debit': false,
-    'credit': true,
-    'amount': 250,
-    '__typename': 'Transaction'
-  },
-  {
-    'id': '5d5c1f747e01cd704f18f865',
-    'user_id': 'employee5',
-    'description': 'refund',
-    'merchant_id': 'walmart',
-    'debit': false,
-    'credit': true,
-    'amount': 100,
-    '__typename': 'Transaction'
-  }
-]
+const mockData = [{
+  amount: 40,
+  credit: false,
+  debit: true,
+  description: 'Flight to NRT',
+  id: '61c3f92383f0a2e3871797d8',
+  merchant: { name: 'Southwest' },
+  merchant_id: 'merchantId123',
+  user: { firstName: 'John', lastName: 'Smith' },
+  user_id: 'userId123'
+}]
 
-export { transactions }
+const mockDropdownData = {
+  merchants: [{
+    id: 'merchantId123',
+    name: 'Southwest'
+  },
+  {
+    id: 'merchantId456',
+    name: 'Delta'
+  }],
+  users: [{
+    firstName: 'John',
+    id: 'userId123',
+    lastName: 'Smith'
+  },
+  {
+    firstName: 'Leroy',
+    id: 'userId456',
+    lastName: 'Jenkins'
+  }]
+}
+
+export { mockData, mockDropdownData }

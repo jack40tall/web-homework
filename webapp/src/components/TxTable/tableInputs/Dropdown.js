@@ -1,10 +1,10 @@
 import React from 'react'
 import { Select, MenuItem } from '@material-ui/core'
 import { string, func, any } from 'prop-types'
-import { useStyles } from '../style/globalStyles'
+import { muiStyles } from '../../../style/globalStyles'
 
 export const Dropdown = ({ tx, name, options, selectedVal, onChange }) => {
-  const classes = useStyles()
+  const classes = muiStyles()
   const { isEditMode } = tx
   let index = -1
   let selectedIndex

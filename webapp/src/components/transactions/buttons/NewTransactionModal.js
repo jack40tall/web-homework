@@ -4,8 +4,8 @@ import { Modal, Paper, InputLabel, Input, Button } from '@material-ui/core'
 import { bool, func } from 'prop-types'
 import CreateTransaction from '../../../gql/mutations/createTransaction.gql'
 import GetDropdownOptions from '../../../gql/queries/getDropdownOptions.gql'
-import { Dropdown } from '../../Dropdown'
-import { TypeDropdown } from '../../TypeDropdown'
+import { Dropdown } from '../../TxTable/tableInputs/Dropdown'
+import { TypeDropdown } from '../../TxTable/tableInputs/TypeDropdown'
 import globalStyles from '../../../style/globalStyles'
 
 const { spacer, dropdown, input, largeModal, modal, submitButton } = globalStyles
