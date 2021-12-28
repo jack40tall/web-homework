@@ -48,6 +48,7 @@ export function Home () {
         <NewMerchantModal closeFn={() => setOpenMerchant(false)} open={openMerchant} />
         <NewTransactionModal closeFn={() => setOpenTransaction(false)} open={openTransaction} />
       </div>
+      <p>* Refresh page after creating entity to load </p>
       <TxTable data={data.transactions} dropdownData={dropdownData} />
     </Fragment>
   )
