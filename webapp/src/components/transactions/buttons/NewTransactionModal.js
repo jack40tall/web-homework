@@ -7,12 +7,26 @@ import GetDropdownOptions from '../../../gql/queries/getDropdownOptions.gql'
 import { Dropdown } from '../../TxTable/tableInputs/Dropdown'
 import { TypeDropdown } from '../../TxTable/tableInputs/TypeDropdown'
 import globalStyles from '../../../style/globalStyles'
+import GetTransactionsWithInfo from '../../../gql/queries/getTransactionsWithInfo.gql'
 
 const { spacer, dropdown, input, largeModal, modal, submitButton } = globalStyles
 
 export const NewTransactionModal = ({ open, closeFn }) => {
   const { loading, error, data } = useQuery(GetDropdownOptions)
-  const [createTransaction] = useMutation(CreateTransaction)
+  const [createTransaction] = useMutation(CreateTransaction, {
+    update (
+      cache,
+      {
+        data: { createTransaction }
+      }
+    ) {
+      const { transactions } = cache.readQuery({ query: GetTransactionsWithInfo })
+      cache.writeQuery({
+        query: GetTransactionsWithInfo,
+        data: { transactions: transactions.concat([createTransaction]) }
+      })
+    }
+  })
 
   const [userId, setUserId] = useState(null)
   const [amount, setAmount] = useState('')
@@ -22,6 +36,7 @@ export const NewTransactionModal = ({ open, closeFn }) => {
   const [merchantId, setMerchantId] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
   const [selectedMerchant, setSelectedMerchant] = useState(null)
+  const [reload, toggleReload] = useState(true)
 
   const [merchants, setMerchants] = useState(null)
   const [users, setUsers] = useState(null)
@@ -47,23 +62,31 @@ export const NewTransactionModal = ({ open, closeFn }) => {
     setSelectedMerchant(rawMerchants[0].name)
     setUserId(formattedUsers[0].id)
     setMerchantId(rawMerchants[0].id)
-  }, [data])
+  }, [data, reload])
 
   const onSubmit = () => {
-    if (userId != null && amount !== '' && credit != null && debit != null && description !== '' && merchantId != null) {
-      createTransaction({ variables: { user_id: userId,
-        amount: parseFloat(amount),
-        credit,
-        debit,
-        description,
-        merchant_id: merchantId } })
+    console.log('userId: ', userId)
+    if (
+      userId != null &&
+      amount !== '' &&
+      credit != null &&
+      debit != null &&
+      description !== '' &&
+      merchantId != null
+    ) {
+      createTransaction({
+        variables: { user_id: userId, amount: parseFloat(amount), credit, debit, description, merchant_id: merchantId }
+      })
       setUserId(null)
       setAmount('')
       setCredit(false)
       setDebit(true)
       setDescription('')
       setMerchantId(null)
+      toggleReload(!reload)
       closeFn()
+    } else {
+      console.log('Cannot create transaction: contains null values')
     }
   }
 
@@ -120,27 +143,29 @@ export const NewTransactionModal = ({ open, closeFn }) => {
   }
 
   return (
-    <Modal
-      aria-describedby='modal-modal-description'
-      aria-labelledby='modal-modal-title'
-      onClose={closeFn}
-      open={open}
-    >
-
+    <Modal aria-describedby='modal-modal-description' aria-labelledby='modal-modal-title' onClose={closeFn} open={open}>
       <Paper css={largeModal}>
         <h3>Create Transaction:</h3>
 
         <InputLabel>Purchaser</InputLabel>
-        <Dropdown css={dropdown} {...{ tx, name: 'user', options: users, selectedVal: selectedUser, onChange: onUserChange }} />
+        <Dropdown
+          css={dropdown}
+          {...{ tx, name: 'user', options: users, selectedVal: selectedUser, onChange: onUserChange }}
+        />
         <div css={spacer} />
         <InputLabel>Merchant</InputLabel>
-        <Dropdown css={dropdown} {...{ tx, name: 'merchant', options: merchants, selectedVal: selectedMerchant, onChange: onMerchantChange }} />
+        <Dropdown
+          css={dropdown}
+          {...{ tx, name: 'merchant', options: merchants, selectedVal: selectedMerchant, onChange: onMerchantChange }}
+        />
         <div css={spacer} />
         <InputLabel>Amount (in dollars)</InputLabel>
         <Input
           css={input}
           // name={name}
-          onChange={e => { setAmount(e.target.value) }}
+          onChange={e => {
+            setAmount(e.target.value)
+          }}
           value={amount}
         />
         <InputLabel>Type</InputLabel>
@@ -149,23 +174,25 @@ export const NewTransactionModal = ({ open, closeFn }) => {
         <InputLabel>Description</InputLabel>
         <Input
           css={input}
-          onChange={e => { setDescription(e.target.value) }}
+          onChange={e => {
+            setDescription(e.target.value)
+          }}
           // name={name}
           value={description}
         />
 
-        <div
-          css={submitButton}>
-          <Button
-            onClick={onSubmit} variant='contained'>Create</Button>
+        <div css={submitButton}>
+          <Button onClick={onSubmit} variant='contained'>
+            Create
+          </Button>
         </div>
       </Paper>
-
     </Modal>
   )
 }
 
 NewTransactionModal.propTypes = {
   open: bool,
-  closeFn: func
+  closeFn: func,
+  refetch: func
 }

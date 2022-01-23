@@ -26,9 +26,11 @@ export const TxTable = ({ data, dropdownData }) => {
   const [users, setUsers] = useState(null)
   const [previous, setPrevious] = useState({})
   const [rows, setRows] = useState(
-    data.map(tx => {
-      return { ...tx, isEditMode: false }
-    })
+    data
+      .map(tx => {
+        return { ...tx, isEditMode: false }
+      })
+      .reverse()
   )
 
   const [deleteTransaction] = useMutation(DeleteTransaction)
@@ -48,16 +50,25 @@ export const TxTable = ({ data, dropdownData }) => {
     setUsers(formattedUsers)
   }, [dropdownData])
 
+  useEffect(() => {
+    setRows(
+      data
+        .map(tx => {
+          return { ...tx, isEditMode: false }
+        })
+        .reverse()
+    )
+  }, [data])
+
   const onToggleEditMode = id => {
     // prevState prevents race condition
     setRows(prevState => {
-      return (
-        prevState.map(row => {
-          if (row.id === id) {
-            return { ...row, isEditMode: !row.isEditMode }
-          }
-          return row
-        }))
+      return prevState.map(row => {
+        if (row.id === id) {
+          return { ...row, isEditMode: !row.isEditMode }
+        }
+        return row
+      })
     })
   }
 
@@ -87,10 +98,7 @@ export const TxTable = ({ data, dropdownData }) => {
     const { id } = tx
     const newRows = rows.map(tx => {
       if (tx.id === id) {
-        return (
-          value === 'Credit' ? { ...tx, credit: true, debit: false }
-            : { ...tx, credit: false, debit: true }
-        )
+        return value === 'Credit' ? { ...tx, credit: true, debit: false } : { ...tx, credit: false, debit: true }
       }
       return tx
     })
@@ -105,15 +113,15 @@ export const TxTable = ({ data, dropdownData }) => {
     const { id: transactionId } = tx
     const newRows = rows.map(tx => {
       if (tx.id === transactionId) {
-        return (
-          { ...tx,
-            user_id: option.id,
-            user: {
-              id: option.id,
-              firstName: option.firstName,
-              lastName: option.lastName
-            } }
-        )
+        return {
+          ...tx,
+          user_id: option.id,
+          user: {
+            id: option.id,
+            firstName: option.firstName,
+            lastName: option.lastName
+          }
+        }
       }
       return tx
     })
@@ -129,14 +137,14 @@ export const TxTable = ({ data, dropdownData }) => {
     const { id: transactionId } = tx
     const newRows = rows.map(tx => {
       if (tx.id === transactionId) {
-        return (
-          { ...tx,
-            merchant_id: option.id,
-            merchant: {
-              id: option.id,
-              name: option.name
-            } }
-        )
+        return {
+          ...tx,
+          merchant_id: option.id,
+          merchant: {
+            id: option.id,
+            name: option.name
+          }
+        }
       }
       return tx
     })
@@ -148,16 +156,16 @@ export const TxTable = ({ data, dropdownData }) => {
     const newRowArray = rows.filter(row => row.id === id)
     const newRow = newRowArray[0]
     updateTransaction({
-      variables:
-        {
-          id: newRow.id,
-          user_id: newRow.user_id,
-          amount: newRow.amount,
-          credit: newRow.credit,
-          debit: newRow.debit,
-          description: newRow.description,
-          merchant_id: newRow.merchant_id
-        } })
+      variables: {
+        id: newRow.id,
+        user_id: newRow.user_id,
+        amount: newRow.amount,
+        credit: newRow.credit,
+        debit: newRow.debit,
+        description: newRow.description,
+        merchant_id: newRow.merchant_id
+      }
+    })
     onToggleEditMode(id)
   }
 
@@ -188,15 +196,27 @@ export const TxTable = ({ data, dropdownData }) => {
     <>
       <Paper className={classes.root}>
         <Table aria-label='caption table' className={classes.table}>
-          <TableHead css={tableHeader} >
+          <TableHead css={tableHeader}>
             <TableRow>
               <TableCell align='left' className='tableHeader' />
-              <TableCell align='left' className='tableHeader'>Transaction ID</TableCell>
-              <TableCell align='left' className='tableHeader'>Purchaser</TableCell>
-              <TableCell align='left' className='tableHeader'>Merchant</TableCell>
-              <TableCell align='left' className='tableHeader'>Description</TableCell>
-              <TableCell align='left' className='tableHeader'>Type</TableCell>
-              <TableCell align='left' className='tableHeader'>Amount</TableCell>
+              <TableCell align='left' className='tableHeader'>
+                Transaction ID
+              </TableCell>
+              <TableCell align='left' className='tableHeader'>
+                Purchaser
+              </TableCell>
+              <TableCell align='left' className='tableHeader'>
+                Merchant
+              </TableCell>
+              <TableCell align='left' className='tableHeader'>
+                Description
+              </TableCell>
+              <TableCell align='left' className='tableHeader'>
+                Type
+              </TableCell>
+              <TableCell align='left' className='tableHeader'>
+                Amount
+              </TableCell>
               <TableCell align='left' className='tableHeader' />
             </TableRow>
           </TableHead>
@@ -209,24 +229,15 @@ export const TxTable = ({ data, dropdownData }) => {
                   <TableCell className={classes.selectTableCell}>
                     {isEditMode ? (
                       <>
-                        <IconButton
-                          aria-label='done'
-                          onClick={() => onConfirmEdit(id)}
-                        >
+                        <IconButton aria-label='done' onClick={() => onConfirmEdit(id)}>
                           <DoneIcon />
                         </IconButton>
-                        <IconButton
-                          aria-label='revert'
-                          onClick={() => onRevert(id)}
-                        >
+                        <IconButton aria-label='revert' onClick={() => onRevert(id)}>
                           <RevertIcon />
                         </IconButton>
                       </>
                     ) : (
-                      <IconButton
-                        aria-label='edit'
-                        onClick={() => onToggleEditMode(id)}
-                      >
+                      <IconButton aria-label='edit' onClick={() => onToggleEditMode(id)}>
                         <EditIcon />
                       </IconButton>
                     )}
@@ -235,14 +246,23 @@ export const TxTable = ({ data, dropdownData }) => {
                     {id}
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
-                    <Dropdown {...{ tx, name: 'user_id', options: users, selectedVal: fullName, onChange: onUserChange }} />
+                    <Dropdown
+                      {...{ tx, name: 'user_id', options: users, selectedVal: fullName, onChange: onUserChange }}
+                    />
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
-                    <Dropdown {...{ tx, name: 'merchant', options: merchants, selectedVal: merchant.name, onChange: onMerchantChange }} />
+                    <Dropdown
+                      {...{
+                        tx,
+                        name: 'merchant',
+                        options: merchants,
+                        selectedVal: merchant.name,
+                        onChange: onMerchantChange
+                      }}
+                    />
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
                     <CustomInput {...{ tx, name: 'description', text: description, onChange }} />
-
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
                     <TypeDropdown {...{ tx, name: 'type', debit, credit, onTypeChange }} />
@@ -253,14 +273,12 @@ export const TxTable = ({ data, dropdownData }) => {
                   </TableCell>
                   <TableCell className={classes.deleteCell}>
                     {isEditMode ? (
-                      <IconButton
-                        aria-label='delete'
-                        onClick={() => onDeleteRow(id)}
-                      >
+                      <IconButton aria-label='delete' onClick={() => onDeleteRow(id)}>
                         <DeleteOutline />
                       </IconButton>
-
-                    ) : ''}
+                    ) : (
+                      ''
+                    )}
                   </TableCell>
                 </TableRow>
               )
@@ -273,14 +291,16 @@ export const TxTable = ({ data, dropdownData }) => {
 }
 
 TxTable.propTypes = {
-  data: arrayOf(shape({
-    id: string,
-    user_id: string,
-    description: string,
-    merchant_id: string,
-    debit: bool,
-    credit: bool,
-    amount: number
-  })),
+  data: arrayOf(
+    shape({
+      id: string,
+      user_id: string,
+      description: string,
+      merchant_id: string,
+      debit: bool,
+      credit: bool,
+      amount: number
+    })
+  ),
   dropdownData: any
 }

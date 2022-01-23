@@ -20,19 +20,11 @@ export function Home () {
   const [openTransaction, setOpenTransaction] = useState(false)
 
   if (loading || dropdownLoading) {
-    return (
-      <Fragment>
-        Loading...
-      </Fragment>
-    )
+    return <Fragment>Loading...</Fragment>
   }
 
   if (error || dropdownError) {
-    return (
-      <Fragment>
-        ¯\_(ツ)_/¯
-      </Fragment>
-    )
+    return <Fragment>¯\_(ツ)_/¯</Fragment>
   }
 
   return (
@@ -41,14 +33,19 @@ export function Home () {
       <p css={centerStyle}>Edit, Add, and Delete your Transactions</p>
       <div css={flexCenter}>
         <h2 css={createHeader}>Create: </h2>
-        <Button css={createButton} onClick={() => setOpenMerchant(true)} variant='contained'>Merchant</Button>
-        <Button css={createButton} onClick={() => setOpenUser(true)} variant='contained'>User</Button>
-        <Button css={createButton} onClick={() => setOpenTransaction(true)} variant='contained'>Transaction</Button>
+        <Button css={createButton} onClick={() => setOpenMerchant(true)} variant='contained'>
+          Merchant
+        </Button>
+        <Button css={createButton} onClick={() => setOpenUser(true)} variant='contained'>
+          User
+        </Button>
+        <Button css={createButton} onClick={() => setOpenTransaction(true)} variant='contained'>
+          Transaction
+        </Button>
         <NewUserModal closeFn={() => setOpenUser(false)} open={openUser} />
         <NewMerchantModal closeFn={() => setOpenMerchant(false)} open={openMerchant} />
         <NewTransactionModal closeFn={() => setOpenTransaction(false)} open={openTransaction} />
       </div>
-      <p>* Refresh page after creating entity to load </p>
       <TxTable data={data.transactions} dropdownData={dropdownData} />
     </Fragment>
   )
