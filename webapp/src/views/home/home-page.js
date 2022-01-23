@@ -44,7 +44,7 @@ export function Home () {
         </Button>
         <NewUserModal closeFn={() => setOpenUser(false)} open={openUser} />
         <NewMerchantModal closeFn={() => setOpenMerchant(false)} open={openMerchant} />
-        <NewTransactionModal closeFn={() => setOpenTransaction(false)} open={openTransaction} />
+        <NewTransactionModal closeFn={() => setOpenTransaction(false)} dropdownData={dropdownData} open={openTransaction} />
       </div>
       <TxTable data={data.transactions} dropdownData={dropdownData} />
     </Fragment>

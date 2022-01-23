@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { useMutation, useQuery } from '@apollo/client'
+import { useMutation } from '@apollo/client'
 import { Modal, Paper, InputLabel, Input, Button } from '@material-ui/core'
-import { bool, func } from 'prop-types'
+import { any, bool, func } from 'prop-types'
 import CreateTransaction from '../../../gql/mutations/createTransaction.gql'
-import GetDropdownOptions from '../../../gql/queries/getDropdownOptions.gql'
 import { Dropdown } from '../../TxTable/tableInputs/Dropdown'
 import { TypeDropdown } from '../../TxTable/tableInputs/TypeDropdown'
 import globalStyles from '../../../style/globalStyles'
@@ -11,8 +10,7 @@ import GetTransactionsWithInfo from '../../../gql/queries/getTransactionsWithInf
 
 const { spacer, dropdown, input, largeModal, modal, submitButton } = globalStyles
 
-export const NewTransactionModal = ({ open, closeFn }) => {
-  const { loading, error, data } = useQuery(GetDropdownOptions)
+export const NewTransactionModal = ({ open, closeFn, dropdownData }) => {
   const [createTransaction] = useMutation(CreateTransaction, {
     update (
       cache,
@@ -40,11 +38,8 @@ export const NewTransactionModal = ({ open, closeFn }) => {
 
   const [merchants, setMerchants] = useState(null)
   const [users, setUsers] = useState(null)
-
-  const tx = { isEditMode: true }
-
   useEffect(() => {
-    const { users: rawUsers, merchants: rawMerchants } = data
+    const { users: rawUsers, merchants: rawMerchants } = dropdownData
     const formattedUsers = rawUsers.map(user => {
       return {
         firstName: user.firstName,
@@ -62,10 +57,9 @@ export const NewTransactionModal = ({ open, closeFn }) => {
     setSelectedMerchant(rawMerchants[0].name)
     setUserId(formattedUsers[0].id)
     setMerchantId(rawMerchants[0].id)
-  }, [data, reload])
+  }, [reload])
 
   const onSubmit = () => {
-    console.log('userId: ', userId)
     if (
       userId != null &&
       amount !== '' &&
@@ -86,6 +80,7 @@ export const NewTransactionModal = ({ open, closeFn }) => {
       toggleReload(!reload)
       closeFn()
     } else {
+      // eslint-disable-next-line no-console
       console.log('Cannot create transaction: contains null values')
     }
   }
@@ -111,22 +106,7 @@ export const NewTransactionModal = ({ open, closeFn }) => {
     setSelectedMerchant(option.name)
   }
 
-  if (loading) {
-    return (
-      <Modal
-        aria-describedby='modal-modal-description'
-        aria-labelledby='modal-modal-title'
-        onClose={closeFn}
-        open={open}
-      >
-        <Paper css={modal}>
-          <h3>Loading...</h3>
-        </Paper>
-      </Modal>
-    )
-  }
-
-  if (error) {
+  if (!dropdownData) {
     return (
       <Modal
         aria-describedby='modal-modal-description'
@@ -150,13 +130,13 @@ export const NewTransactionModal = ({ open, closeFn }) => {
         <InputLabel>Purchaser</InputLabel>
         <Dropdown
           css={dropdown}
-          {...{ tx, name: 'user', options: users, selectedVal: selectedUser, onChange: onUserChange }}
+          {...{ tx: null, name: 'user', options: users, selectedVal: selectedUser, onChange: onUserChange }}
         />
         <div css={spacer} />
         <InputLabel>Merchant</InputLabel>
         <Dropdown
           css={dropdown}
-          {...{ tx, name: 'merchant', options: merchants, selectedVal: selectedMerchant, onChange: onMerchantChange }}
+          {...{ tx: null, name: 'merchant', options: merchants, selectedVal: selectedMerchant, onChange: onMerchantChange }}
         />
         <div css={spacer} />
         <InputLabel>Amount (in dollars)</InputLabel>
@@ -169,7 +149,7 @@ export const NewTransactionModal = ({ open, closeFn }) => {
           value={amount}
         />
         <InputLabel>Type</InputLabel>
-        <TypeDropdown css={dropdown} {...{ tx, name: 'type', debit, credit, onTypeChange }} />
+        <TypeDropdown css={dropdown} {...{ tx: { isEditMode: true }, name: 'type', debit, credit, onTypeChange }} />
         <div css={spacer} />
         <InputLabel>Description</InputLabel>
         <Input
@@ -194,5 +174,6 @@ export const NewTransactionModal = ({ open, closeFn }) => {
 NewTransactionModal.propTypes = {
   open: bool,
   closeFn: func,
+  dropdownData: any,
   refetch: func
 }
