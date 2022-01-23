@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client'
 import { Modal, Paper, InputLabel, Input, Button } from '@material-ui/core'
 import { bool, func } from 'prop-types'
 import CreateUser from '../../../gql/mutations/createUser.gql'
+import GetDropdownOptions from '../../../gql/queries/getDropdownOptions.gql'
 import globalStyles from '../../../style/globalStyles'
 
 const { input, modal, submitButton } = globalStyles
@@ -11,7 +12,20 @@ export const NewUserModal = ({ open, closeFn }) => {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [birthDate, setBirthDate] = useState('')
-  const [createUser] = useMutation(CreateUser)
+  const [createUser] = useMutation(CreateUser, {
+    update (
+      cache,
+      {
+        data: { createUser }
+      }
+    ) {
+      const { users } = cache.readQuery({ query: GetDropdownOptions })
+      cache.writeQuery({
+        query: GetDropdownOptions,
+        data: { users: users.concat([createUser]) }
+      })
+    }
+  })
 
   const onSubmit = () => {
     if (firstName != null && lastName != null && birthDate != null) {
@@ -46,6 +60,7 @@ export const NewUserModal = ({ open, closeFn }) => {
           value={lastName}
         />
         <InputLabel>Date of Birth</InputLabel>
+        {/* TODO: Add Date Picker and verification */}
         <Input
           css={input}
           onChange={e => { setBirthDate(e.target.value) }}

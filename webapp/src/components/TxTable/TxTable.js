@@ -246,19 +246,23 @@ export const TxTable = ({ data, dropdownData }) => {
                     {id}
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
-                    <Dropdown
+                    {isEditMode ? (
+                      <Dropdown
                         {...{ tx, options: users, selectedVal: fullName, onChange: onUserChange }}
-                    />
+                      />
+                    ) : fullName}
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
-                    <Dropdown
-                      {...{
-                        tx,
-                        options: merchants,
-                        selectedVal: merchant.name,
-                        onChange: onMerchantChange
-                      }}
-                    />
+                    {isEditMode ? (
+                      <Dropdown
+                        {...{
+                          tx,
+                          options: merchants,
+                          selectedVal: merchant.name,
+                          onChange: onMerchantChange
+                        }}
+                      />
+                    ) : merchant.name}
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
                     <CustomInput {...{ tx, name: 'description', text: description, onChange }} />

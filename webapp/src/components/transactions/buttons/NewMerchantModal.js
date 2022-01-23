@@ -3,13 +3,27 @@ import { useMutation } from '@apollo/client'
 import { Modal, Paper, InputLabel, Input, Button } from '@material-ui/core'
 import { bool, func } from 'prop-types'
 import CreateMerchant from '../../../gql/mutations/createMerchant.gql'
+import GetDropdownOptions from '../../../gql/queries/getDropdownOptions.gql'
 import globalStyles from '../../../style/globalStyles'
 
 const { input, modal, submitButton } = globalStyles
 
 export const NewMerchantModal = ({ open, closeFn }) => {
   const [name, setName] = useState('')
-  const [createMerchant] = useMutation(CreateMerchant)
+  const [createMerchant] = useMutation(CreateMerchant, {
+    update (
+      cache,
+      {
+        data: { createMerchant }
+      }
+    ) {
+      const { merchants } = cache.readQuery({ query: GetDropdownOptions })
+      cache.writeQuery({
+        query: GetDropdownOptions,
+        data: { merchants: merchants.concat([createMerchant]) }
+      })
+    }
+  })
 
   const onSubmit = () => {
     if (name != null) {
