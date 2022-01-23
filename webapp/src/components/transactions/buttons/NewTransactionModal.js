@@ -130,13 +130,13 @@ export const NewTransactionModal = ({ open, closeFn, dropdownData }) => {
         <InputLabel>Purchaser</InputLabel>
         <Dropdown
           css={dropdown}
-          {...{ tx: null, name: 'user', options: users, selectedVal: selectedUser, onChange: onUserChange }}
+          {...{ tx: null, options: users, selectedVal: selectedUser, onChange: onUserChange }}
         />
         <div css={spacer} />
         <InputLabel>Merchant</InputLabel>
         <Dropdown
           css={dropdown}
-          {...{ tx: null, name: 'merchant', options: merchants, selectedVal: selectedMerchant, onChange: onMerchantChange }}
+          {...{ tx: null, options: merchants, selectedVal: selectedMerchant, onChange: onMerchantChange }}
         />
         <div css={spacer} />
         <InputLabel>Amount (in dollars)</InputLabel>

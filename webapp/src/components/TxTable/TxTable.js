@@ -247,14 +247,13 @@ export const TxTable = ({ data, dropdownData }) => {
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
                     <Dropdown
-                      {...{ tx, name: 'user_id', options: users, selectedVal: fullName, onChange: onUserChange }}
+                        {...{ tx, options: users, selectedVal: fullName, onChange: onUserChange }}
                     />
                   </TableCell>
                   <TableCell align='left' className={classes.tableCell}>
                     <Dropdown
                       {...{
                         tx,
-                        name: 'merchant',
                         options: merchants,
                         selectedVal: merchant.name,
                         onChange: onMerchantChange
